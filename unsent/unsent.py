@@ -56,7 +56,7 @@ class unsent:
     ) -> None:
         self.key = key or os.getenv("UNSENT_API_KEY") or os.getenv("UNSENT_API_KEY")
         if not self.key:
-            raise ValueError("Missing API key. Pass it to unsent('us_123')")
+            raise ValueError("Missing API key. Pass it to unsent('un_xxxx')")
 
         base = (
             os.getenv("UNSENT_BASE_URL")

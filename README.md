@@ -26,7 +26,7 @@ poetry add unsent
 ```python
 from unsent import unsent
 
-client = unsent("us_12345")
+client = unsent("un_xxxx")
 ```
 
 ### Environment Variables
@@ -351,7 +351,7 @@ By default, the SDK raises exceptions on HTTP errors:
 ```python
 from unsent import unsent, unsentHTTPError
 
-client = unsent("us_12345")
+client = unsent("un_xxxx")
 
 try:
     data, error = client.emails.send({
@@ -367,7 +367,7 @@ except unsentHTTPError as e:
 To disable automatic error raising:
 
 ```python
-client = unsent("us_12345", raise_on_error=False)
+client = unsent("un_xxxx", raise_on_error=False)
 
 data, error = client.emails.send({
     "to": "hello@acme.com",
@@ -393,7 +393,7 @@ from unsent import unsent
 session = requests.Session()
 session.verify = False  # Not recommended for production!
 
-client = unsent("us_12345", session=session)
+client = unsent("un_xxxx", session=session)
 ```
 
 ## API Reference
