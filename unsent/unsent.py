@@ -78,8 +78,15 @@ class unsent:
         # Lazily initialise resource clients.
         self.emails = Emails(self)
         self.contacts = Contacts(self)
+        self.contact_books = ContactBooks(self)
         self.domains = Domains(self)
         self.campaigns = Campaigns(self)
+        self.templates = Templates(self)
+        self.webhooks = Webhooks(self)
+        self.analytics = Analytics(self)
+        self.suppressions = Suppressions(self)
+        self.api_keys = ApiKeys(self)
+        self.settings = Settings(self)
 
     # ------------------------------------------------------------------
     # Internal request helper
@@ -165,5 +172,12 @@ class unsent:
 # Import here to avoid circular dependency during type checking
 from .emails import Emails  # noqa: E402  pylint: disable=wrong-import-position
 from .contacts import Contacts  # noqa: E402  pylint: disable=wrong-import-position
+from .contact_books import ContactBooks  # noqa: E402
 from .domains import Domains  # type: ignore  # noqa: E402
 from .campaigns import Campaigns  # type: ignore  # noqa: E402
+from .templates import Templates  # noqa: E402
+from .webhooks import Webhooks  # noqa: E402
+from .analytics import Analytics  # noqa: E402
+from .suppressions import Suppressions  # noqa: E402
+from .api_keys import ApiKeys  # noqa: E402
+from .settings import Settings  # noqa: E402

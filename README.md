@@ -1,9 +1,12 @@
 # unsent Python SDK
 
+The official Python library for the [unsent](https://unsent.dev) API.
+
 ## Prerequisites
 
-- [unsent API key](https://app.unsent.dev/dev-settings/api-keys)
-- [Verified domain](https://app.unsent.dev/domains)
+- Python 3.8+
+- [unsent API Key](https://app.unsent.dev/dev-settings/api-keys)
+- [Verified Domain](https://app.unsent.dev/domains)
 
 ## Installation
 
@@ -21,178 +24,175 @@ poetry add unsent
 
 ## Usage
 
-### Basic Setup
+### Configuration
+
+Initialize the client with your API key.
 
 ```python
 from unsent import unsent
 
-client = unsent("un_xxxx")
+client = unsent("res_123456789")
 ```
 
-### Environment Variables
+#### Environment Variables
 
-You can also set your API key using environment variables:
+You can omit the API key if you set the `UNSENT_API_KEY` environment variable.
 
 ```python
-# Set UNSENT_API_KEY or UNSENT_API_KEY in your environment
-# Then initialize without passing the key
+# With UNSENT_API_KEY set in environment
 client = unsent()
 ```
 
-### Sending Emails
+#### Custom Session
 
-#### Simple Email
+For advanced usage (e.g., proxies, connection pooling), you can pass a custom `requests.Session`.
+
+```python
+import requests
+from unsent import unsent
+
+session = requests.Session()
+client = unsent("res_123...", session=session)
+```
+
+### Emails
+
+#### Send Email
 
 ```python
 data, error = client.emails.send({
-    "to": "hello@acme.com",
-    "from": "hello@company.com",
-    "subject": "unsent email",
-    "html": "<p>unsent is the best email service provider to send emails</p>",
-    "text": "unsent is the best email service provider to send emails",
+    "from": "onboarding@resend.dev",
+    "to": "user@example.com",
+    "subject": "Hello World",
+    "html": "<p>It works!</p>"
 })
 
 if error:
-    print(f"Error: {error}")
+    print(error)
 else:
-    print(f"Email sent! ID: {data['id']}")
-```
-
-#### Email with Attachments
-
-```python
-data, error = client.emails.send({
-    "to": "hello@acme.com",
-    "from": "hello@company.com",
-    "subject": "Email with attachment",
-    "html": "<p>Please find the attachment below</p>",
-    "attachments": [
-        {
-            "filename": "document.pdf",
-            "content": "base64-encoded-content-here",
-        }
-    ],
-})
-```
-
-#### Scheduled Email
-
-```python
-from datetime import datetime, timedelta
-
-# Schedule email for 1 hour from now
-scheduled_time = datetime.now() + timedelta(hours=1)
-
-data, error = client.emails.send({
-    "to": "hello@acme.com",
-    "from": "hello@company.com",
-    "subject": "Scheduled email",
-    "html": "<p>This email was scheduled</p>",
-    "scheduledAt": scheduled_time,
-})
+    print(data["id"])
 ```
 
 #### Batch Emails
 
+Send up to 100 emails in a single request.
+
 ```python
-emails = [
+data, error = client.emails.batch([
     {
+        "from": "hello@company.com",
         "to": "user1@example.com",
-        "from": "hello@company.com",
         "subject": "Hello User 1",
-        "html": "<p>Welcome User 1</p>",
+        "html": "<p>Welcome!</p>"
     },
     {
-        "to": "user2@example.com",
         "from": "hello@company.com",
+        "to": "user2@example.com",
         "subject": "Hello User 2",
-        "html": "<p>Welcome User 2</p>",
-    },
-]
-
-data, error = client.emails.batch(emails)
-
-if error:
-    print(f"Error: {error}")
-else:
-    print(f"Sent {len(data['emails'])} emails")
+        "html": "<p>Welcome!</p>"
+    }
+])
 ```
 
-#### Idempotent Retries
+#### Get Email
 
-```python
-# Idempotent retries: same payload + same key returns the original response
-payload = {
-    "to": "hello@acme.com",
-    "from": "hello@company.com",
-    "subject": "Welcome!",
-    "html": "<p>Welcome to our service</p>",
-}
-
-resp, _ = client.emails.send(
-    payload=payload,
-    options={"idempotency_key": "signup-123"},
-)
-
-# Works for batch requests as well
-resp, _ = client.emails.batch(
-    payload=[payload],
-    options={"idempotency_key": "bulk-welcome-1"},
-)
-
-# If the same key is reused with a different payload, the API responds with HTTP 409.
-```
-
-### Managing Emails
-
-#### Get Email Details
+Retrieve details about a sent email.
 
 ```python
 data, error = client.emails.get("email_id")
-
-if error:
-    print(f"Error: {error}")
-else:
-    print(f"Email status: {data['status']}")
 ```
 
-#### Update Email
+#### Update Scheduled Email
+
+Update the schedule of a pending email.
 
 ```python
 data, error = client.emails.update("email_id", {
-    "subject": "Updated subject",
-    "html": "<p>Updated content</p>",
+    "scheduledAt": "2024-12-25T12:00:00Z"
 })
 ```
 
 #### Cancel Scheduled Email
 
+Cancel a scheduled email before it is sent.
+
 ```python
 data, error = client.emails.cancel("email_id")
-
-if error:
-    print(f"Error: {error}")
-else:
-    print("Email cancelled successfully")
 ```
 
-### Managing Contacts
+#### List Emails
+
+Retrieve a list of sent emails with optional filters.
+
+```python
+data, error = client.emails.list(
+    page=1,
+    limit=20,
+    start_date="2024-01-01T00:00:00Z",
+    end_date="2024-01-31T23:59:59Z",
+    domain_id="domain_id"
+)
+```
+
+#### Get Complaints
+
+Retrieve email complaints with pagination.
+
+```python
+data, error = client.emails.get_complaints(page=1, limit=20)
+```
+
+#### Get Bounces
+
+Retrieve email bounces with pagination.
+
+```python
+data, error = client.emails.get_bounces(page=1, limit=20)
+```
+
+#### Get Unsubscribes
+
+Retrieve email unsubscribes with pagination.
+
+```python
+data, error = client.emails.get_unsubscribes(page=1, limit=20)
+```
+
+### Contacts
+
+#### List Contacts
+
+Retrieve contacts from a contact book with optional filters.
+
+```python
+data, error = client.contacts.list(
+    "contact_book_id",
+    page=1,
+    limit=20,
+    emails="user1@example.com,user2@example.com",
+    ids="contact_id_1,contact_id_2"
+)
+```
 
 #### Create Contact
+
+Add a contact to a contact book.
 
 ```python
 data, error = client.contacts.create("contact_book_id", {
     "email": "user@example.com",
     "firstName": "John",
     "lastName": "Doe",
-    "metadata": {
-        "company": "Acme Inc",
-        "role": "Developer"
+    "subscribed": True,
+    "properties": {
+        "source": "signup_form"
     }
 })
 ```
 
 #### Get Contact
+
+Retrieve a contact by ID from a specific book.
 
 ```python
 data, error = client.contacts.get("contact_book_id", "contact_id")
@@ -200,252 +200,394 @@ data, error = client.contacts.get("contact_book_id", "contact_id")
 
 #### Update Contact
 
+Update an existing contact's information.
+
 ```python
 data, error = client.contacts.update("contact_book_id", "contact_id", {
     "firstName": "Jane",
-    "metadata": {
-        "role": "Senior Developer"
+    "properties": {
+        "status": "active"
     }
 })
 ```
 
 #### Upsert Contact
 
+Create a contact if they don't exist, or update them if they do (matched by email).
+
 ```python
-# Creates if doesn't exist, updates if exists
-data, error = client.contacts.upsert("contact_book_id", "contact_id", {
+data, error = client.contacts.upsert("contact_book_id", "contact_id_optional", {
     "email": "user@example.com",
-    "firstName": "John",
-    "lastName": "Doe",
+    "firstName": "John"
 })
 ```
 
 #### Delete Contact
 
+Remove a contact from a book.
+
 ```python
-data, error = client.contacts.delete(
-    book_id="contact_book_id",
-    contact_id="contact_id"
-)
+data, error = client.contacts.delete("contact_book_id", "contact_id")
 ```
 
-### Managing Campaigns
+### Contact Books
+
+#### List Contact Books
+
+Retrieve all your contact books.
+
+```python
+data, error = client.contact_books.list()
+```
+
+#### Create Contact Book
+
+Create a new list to organize contacts.
+
+```python
+data, error = client.contact_books.create({
+    "name": "Newsletter Subscribers",
+    "emoji": "📧"
+})
+```
+
+#### Get Contact Book
+
+Retrieve details of a specific contact book.
+
+```python
+data, error = client.contact_books.get("book_id")
+```
+
+#### Update Contact Book
+
+Rename or update settings of a contact book.
+
+```python
+data, error = client.contact_books.update("book_id", {
+    "name": "Active Users"
+})
+```
+
+#### Delete Contact Book
+
+Delete a contact book and all its contacts.
+
+```python
+data, error = client.contact_books.delete("book_id")
+```
+
+### Campaigns
 
 #### Create Campaign
 
+Draft a new email campaign.
+
 ```python
-from unsent import types
+data, error = client.campaigns.create({
+    "name": "Monthly Newsletter",
+    "subject": "What's new in January",
+    "from": "news@company.com",
+    "contactBookId": "book_id",
+    "html": "<h1>News...</h1>"
+})
+```
 
-campaign_payload: types.CampaignCreate = {
-    "name": "Welcome Series",
-    "subject": "Welcome to our service!",
-    "html": "<p>Thanks for joining us!</p>",
-    "from": "welcome@example.com",
-    "contactBookId": "cb_1234567890",
-}
+#### Get Campaign
 
-campaign_resp, error = client.campaigns.create(payload=campaign_payload)
+Retrieve campaign details and stats.
 
-if error:
-    print(f"Error: {error}")
-else:
-    print(f"Campaign created! ID: {campaign_resp['id']}")
+```python
+data, error = client.campaigns.get("campaign_id")
 ```
 
 #### Schedule Campaign
 
-```python
-from unsent import types
-
-schedule_payload: types.CampaignSchedule = {
-    "scheduledAt": "2024-12-01T10:00:00Z",
-}
-
-schedule_resp, error = client.campaigns.schedule(
-    campaign_id=campaign_resp["id"],
-    payload=schedule_payload
-)
-
-if error:
-    print(f"Error: {error}")
-else:
-    print("Campaign scheduled successfully!")
-```
-
-#### Pause/Resume Campaigns
+Schedule a campaign to be sent.
 
 ```python
-# Pause a campaign
-pause_resp, error = client.campaigns.pause(campaign_id="campaign_123")
-
-if error:
-    print(f"Error: {error}")
-else:
-    print("Campaign paused successfully!")
-
-# Resume a campaign
-resume_resp, error = client.campaigns.resume(campaign_id="campaign_123")
-
-if error:
-    print(f"Error: {error}")
-else:
-    print("Campaign resumed successfully!")
+data, error = client.campaigns.schedule("campaign_id", {
+    "scheduledAt": "2024-02-01T09:00:00Z"
+})
 ```
 
-#### Get Campaign Details
+#### Pause/Resume Campaign
+
+Control the delivery of a running campaign.
 
 ```python
-data, error = client.campaigns.get("campaign_id")
+# Pause
+client.campaigns.pause("campaign_id")
 
-if error:
-    print(f"Error: {error}")
-else:
-    print(f"Campaign status: {data['status']}")
-    print(f"Recipients: {data['total']}")
-    print(f"Sent: {data['sent']}")
+# Resume
+client.campaigns.resume("campaign_id")
 ```
 
-### Managing Domains
+### Templates
+
+#### List Templates
+
+Retrieve all your email templates.
+
+```python
+data, error = client.templates.list()
+```
+
+#### Create Template
+
+Create a reusable email template.
+
+```python
+data, error = client.templates.create({
+    "name": "Welcome Email",
+    "subject": "Welcome to Unsent",
+    "html": "<h1>Welcome {{name}}</h1>"
+})
+```
+
+#### Get Template
+
+Retrieve a specific template.
+
+```python
+data, error = client.templates.get("template_id")
+```
+
+#### Update Template
+
+Modify an existing template.
+
+```python
+data, error = client.templates.update("template_id", {
+    "subject": "New Welcome Subject"
+})
+```
+
+#### Delete Template
+
+Remove a template.
+
+```python
+data, error = client.templates.delete("template_id")
+```
+
+### Domains
 
 #### List Domains
 
+View all registered sending domains.
+
 ```python
 data, error = client.domains.list()
-
-if error:
-    print(f"Error: {error}")
-else:
-    for domain in data:
-        print(f"Domain: {domain['domain']}, Status: {domain['status']}")
 ```
 
 #### Create Domain
 
+Add a new domain for sending.
+
 ```python
 data, error = client.domains.create({
-    "domain": "example.com"
+    "domain": "mail.example.com",
+    "region": "us-east-1"
 })
 ```
 
 #### Verify Domain
 
-```python
-data, error = client.domains.verify(domain_id=123)
+Trigger verification checks for DNS records.
 
-if error:
-    print(f"Error: {error}")
-else:
-    print(f"Verification status: {data['status']}")
+```python
+data, error = client.domains.verify("domain_id")
 ```
 
 #### Get Domain
 
+Retrieve DNS records and verification status.
+
 ```python
-data, error = client.domains.get(domain_id=123)
+data, error = client.domains.get("domain_id")
+```
+
+#### Delete Domain
+
+Remove a domain.
+
+```python
+data, error = client.domains.delete("domain_id")
+```
+
+### Webhooks
+
+> **Note:** Webhooks functionality is currently under development in the API. The SDK includes placeholder methods to ensure compatibility when the feature becomes available.
+
+#### List Webhooks
+
+View configured webhooks.
+
+```python
+data, error = client.webhooks.list()
+```
+
+#### Create Webhook
+
+Subscribe to email events.
+
+```python
+data, error = client.webhooks.create({
+    "url": "https://api.myapp.com/webhooks/resend",
+    "events": ["email.sent", "email.delivered", "email.bounced"]
+})
+```
+
+#### Get Webhook
+
+Retrieve webhook details.
+
+```python
+data, error = client.webhooks.get("webhook_id")
+```
+
+#### Update Webhook
+
+Modify webhook URL or events.
+
+```python
+data, error = client.webhooks.update("webhook_id", {
+    "url": "https://new-api.myapp.com/hooks"
+})
+```
+
+#### Delete Webhook
+
+Stop receiving events.
+
+```python
+data, error = client.webhooks.delete("webhook_id")
+```
+
+### Suppressions
+
+#### List Suppressions
+
+View email addresses on the suppression list (bounces, complaints).
+
+```python
+# List all suppressions
+data, error = client.suppressions.list()
+
+# Filter by reason
+data, error = client.suppressions.list(
+    reason="HARD_BOUNCE",  # Options: HARD_BOUNCE, COMPLAINT, MANUAL, UNSUBSCRIBE
+    page=1,
+    limit=20,
+    search="example.com"
+)
+```
+
+#### Add Suppression
+
+Manually suppress an email address.
+
+```python
+data, error = client.suppressions.add({
+    "email": "spam@example.com",
+    "reason": "MANUAL"  # Options: HARD_BOUNCE, COMPLAINT, MANUAL, UNSUBSCRIBE
+})
+```
+
+#### Delete Suppression
+
+Remove an email from the suppression list to allow sending again.
+
+```python
+data, error = client.suppressions.delete("user@example.com")
+```
+
+### Analytics
+
+#### Get Usage
+
+Check your daily email usage and limits.
+
+```python
+data, error = client.analytics.get_usage()
+```
+
+#### Get Daily Stats
+
+Retrieve aggregate statistics for a date range.
+
+```python
+data, error = client.analytics.get_daily_stats(
+    start_date="2024-01-01",
+    end_date="2024-01-31"
+)
+```
+
+#### Get Domain Reputation
+
+Check the reputation score of a domain.
+
+```python
+data, error = client.analytics.get_domain_reputation("domain_id")
+```
+
+### API Keys
+
+#### List API Keys
+
+View all active API keys.
+
+```python
+data, error = client.api_keys.list()
+```
+
+#### Create API Key
+
+Generate a new API key.
+
+```python
+data, error = client.api_keys.create({
+    "name": "Production Key"
+})
+```
+
+#### Revoke API Key
+
+Invalidate an API key.
+
+```python
+data, error = client.api_keys.revoke("api_key_id")
+```
+
+### Settings
+
+#### Get Settings
+
+Retrieve account settings and quota information.
+
+```python
+data, error = client.settings.get()
 ```
 
 ### Error Handling
 
-By default, the SDK raises exceptions on HTTP errors:
+By default, the SDK raises `unsentHTTPError` for non-2xx responses. You can change this behavior to return the error object instead.
 
 ```python
-from unsent import unsent, unsentHTTPError
-
-client = unsent("un_xxxx")
-
+# Raise exception on error (Default)
 try:
-    data, error = client.emails.send({
-        "to": "invalid-email",
-        "from": "hello@company.com",
-        "subject": "Test",
-        "html": "<p>Test</p>",
-    })
+    client.emails.send(...)
 except unsentHTTPError as e:
-    print(f"HTTP {e.status_code}: {e.error['message']}")
-```
+    print(e.status_code, e.message)
 
-To disable automatic error raising:
-
-```python
-client = unsent("un_xxxx", raise_on_error=False)
-
-data, error = client.emails.send({
-    "to": "hello@acme.com",
-    "from": "hello@company.com",
-    "subject": "Test",
-    "html": "<p>Test</p>",
-})
-
+# Return error dictionary instead of raising
+client = unsent("key", raise_on_error=False)
+data, error = client.emails.send(...)
 if error:
-    print(f"Error: {error['message']}")
-else:
-    print("Success!")
+    print("Failed:", error)
 ```
-
-### Custom Session
-
-For advanced use cases, you can provide your own `requests.Session`:
-
-```python
-import requests
-from unsent import unsent
-
-session = requests.Session()
-session.verify = False  # Not recommended for production!
-
-client = unsent("un_xxxx", session=session)
-```
-
-## API Reference
-
-### Client Methods
-
-- `unsent(key, url, raise_on_error=True, session=None)` - Initialize the client
-
-### Email Methods
-
-- `client.emails.send(payload)` - Send an email (alias for `create`)
-- `client.emails.create(payload)` - Create and send an email
-- `client.emails.batch(emails)` - Send multiple emails in batch
-- `client.emails.get(email_id)` - Get email details
-- `client.emails.update(email_id, payload)` - Update a scheduled email
-- `client.emails.cancel(email_id)` - Cancel a scheduled email
-
-### Contact Methods
-
-- `client.contacts.create(book_id, payload)` - Create a contact
-- `client.contacts.get(book_id, contact_id)` - Get contact details
-- `client.contacts.update(book_id, contact_id, payload)` - Update a contact
-- `client.contacts.upsert(book_id, contact_id, payload)` - Upsert a contact
-- `client.contacts.delete(book_id, contact_id)` - Delete a contact
-
-### Campaign Methods
-
-- `client.campaigns.create(payload)` - Create a campaign
-- `client.campaigns.get(campaign_id)` - Get campaign details
-- `client.campaigns.schedule(campaign_id, payload)` - Schedule a campaign
-- `client.campaigns.pause(campaign_id)` - Pause a campaign
-- `client.campaigns.resume(campaign_id)` - Resume a campaign
-
-### Domain Methods
-
-- `client.domains.list()` - List all domains
-- `client.domains.create(payload)` - Create a domain
-- `client.domains.verify(domain_id)` - Verify a domain
-- `client.domains.get(domain_id)` - Get domain details
-
-## Requirements
-
-- Python 3.8+
-- requests >= 2.32.0
-- typing_extensions >= 4.7
 
 ## License
 
-MIT
-
-## Support
-
-- [Documentation](https://docs.unsent.dev)
-- [GitHub Issues](https://github.com/souravsspace/unsent-python/issues)
-- [Discord Community](https://discord.gg/unsent)
+MIT License

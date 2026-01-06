@@ -4,48 +4,62 @@ from __future__ import annotations
 
 from typing import Any, Dict, Optional, Tuple
 
+from .legacy_types import APIError
 from .types import (
-    APIError,
-    Campaign,
-    CampaignCreate,
-    CampaignCreateResponse,
-    CampaignSchedule,
-    CampaignScheduleResponse,
-    CampaignActionResponse,
+    CampaignsPostRequest,
+    CampaignsPostResponse,
+    CampaignsGetResponse,
+    CampaignsCampaignIdGetResponse,
+    CampaignsCampaignIdSchedulePostRequest,
+    CampaignsCampaignIdSchedulePostResponse,
+    CampaignsCampaignIdPausePostResponse,
+    CampaignsCampaignIdResumePostResponse,
 )
 
 
 class Campaigns:
     """Client for `/campaigns` endpoints."""
 
-    def __init__(self, unsent: "Unsent") -> None:
+    def __init__(self, unsent: "unsent") -> None:
         self.unsent = unsent
 
+    def list(self) -> Tuple[Optional[CampaignsGetResponse], Optional[APIError]]:
+        data, err = self.unsent.get("/campaigns")
+        return (data, err)  # type: ignore[return-value]
+
     def create(
-        self, payload: CampaignCreate
-    ) -> Tuple[Optional[CampaignCreateResponse], Optional[APIError]]:
+        self, payload: Union[CampaignsPostRequest, Dict[str, Any]]
+    ) -> Tuple[Optional[CampaignsPostResponse], Optional[APIError]]:
+        body = payload
+        if hasattr(payload, "model_dump"):
+            body = payload.model_dump(by_alias=True, exclude_none=True) # type: ignore
+        
         data, err = self.unsent.post(
             "/campaigns",
-            payload,
+            body,
         )
         return (data, err)  # type: ignore[return-value]
 
-    def get(self, campaign_id: str) -> Tuple[Optional[Campaign], Optional[APIError]]:
+    def get(self, campaign_id: str) -> Tuple[Optional[CampaignsCampaignIdGetResponse], Optional[APIError]]:
         data, err = self.unsent.get(f"/campaigns/{campaign_id}")
         return (data, err)  # type: ignore[return-value]
 
     def schedule(
-        self, campaign_id: str, payload: CampaignSchedule
-    ) -> Tuple[Optional[CampaignScheduleResponse], Optional[APIError]]:
+        self, campaign_id: str, payload: Union[CampaignsCampaignIdSchedulePostRequest, Dict[str, Any]]
+    ) -> Tuple[Optional[CampaignsCampaignIdSchedulePostResponse], Optional[APIError]]:
+        body = payload
+        if hasattr(payload, "model_dump"):
+            body = payload.model_dump(by_alias=True, exclude_none=True) # type: ignore
+
         data, err = self.unsent.post(
             f"/campaigns/{campaign_id}/schedule",
-            payload,
+            body,
         )
         return (data, err)  # type: ignore[return-value]
 
     def pause(
         self, campaign_id: str
-    ) -> Tuple[Optional[CampaignActionResponse], Optional[APIError]]:
+    ) -> Tuple[Optional[CampaignsCampaignIdPausePostResponse], Optional[APIError]]:
         data, err = self.unsent.post(
             f"/campaigns/{campaign_id}/pause",
             {},
@@ -54,7 +68,7 @@ class Campaigns:
 
     def resume(
         self, campaign_id: str
-    ) -> Tuple[Optional[CampaignActionResponse], Optional[APIError]]:
+    ) -> Tuple[Optional[CampaignsCampaignIdResumePostResponse], Optional[APIError]]:
         data, err = self.unsent.post(
             f"/campaigns/{campaign_id}/resume",
             {},
@@ -62,4 +76,4 @@ class Campaigns:
         return (data, err)  # type: ignore[return-value]
 
 
-from .unsent import Unsent  # noqa: E402  pylint: disable=wrong-import-position
+from .unsent import unsent  # noqa: E402  pylint: disable=wrong-import-position
