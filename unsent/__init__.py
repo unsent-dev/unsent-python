@@ -29,4 +29,9 @@ __all__ = [
     "Suppressions",
     "Templates",
     "Webhooks",
+    "Activity",
+    "Events",
+    "Metrics",
+    "Stats",
+    "Teams",
 ]

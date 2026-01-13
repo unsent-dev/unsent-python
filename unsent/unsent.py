@@ -87,6 +87,12 @@ class unsent:
         self.suppressions = Suppressions(self)
         self.api_keys = ApiKeys(self)
         self.settings = Settings(self)
+        self.events = Events(self)
+        self.metrics = Metrics(self)
+        self.stats = Stats(self)
+        self.activity = Activity(self)
+        self.teams = Teams(self)
+        self.system = System(self)
 
     # ------------------------------------------------------------------
     # Internal request helper
@@ -181,3 +187,9 @@ from .analytics import Analytics  # noqa: E402
 from .suppressions import Suppressions  # noqa: E402
 from .api_keys import ApiKeys  # noqa: E402
 from .settings import Settings  # noqa: E402
+from .events import Events  # noqa: E402
+from .metrics import Metrics  # noqa: E402
+from .stats import Stats  # noqa: E402
+from .activity import Activity  # noqa: E402
+from .teams import Teams  # noqa: E402
+from .system import System  # noqa: E402

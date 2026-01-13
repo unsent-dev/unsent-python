@@ -7,10 +7,12 @@ from enum import Enum
 from typing import Any
 
 from pydantic import (
+    AnyUrl,
     AwareDatetime,
     BaseModel,
     EmailStr,
     Field,
+    PositiveInt,
     RootModel,
     confloat,
     conint,
@@ -22,6 +24,24 @@ class HealthGetResponse(BaseModel):
     status: str
     uptime: float
     timestamp: float
+
+
+class Memory(BaseModel):
+    rss: float
+    heapTotal: float
+    heapUsed: float
+    external: float
+
+
+class VersionGetResponse(BaseModel):
+    version: str
+    environment: str | None = None
+    nodeVersion: str
+    platform: str
+    arch: str
+    timestamp: str
+    versions: dict[str, str]
+    memory: Memory
 
 
 class ApiKeysGetResponseItem(BaseModel):
@@ -48,7 +68,7 @@ class ApiKeysPostRequest(BaseModel):
 
 
 class ApiKeysPostResponse(BaseModel):
-    pass
+    token: str
 
 
 class ApiKeysIdDeleteResponse(BaseModel):
@@ -56,11 +76,45 @@ class ApiKeysIdDeleteResponse(BaseModel):
 
 
 class SettingsGetResponse(BaseModel):
-    pass
+    id: str
+    name: str
+    plan: str
+    dailyEmailLimit: float
+    monthlyEmailLimit: float
+
+
+class DayItem(BaseModel):
+    type: str
+    sent: float
+
+
+class MonthItem(BaseModel):
+    type: str
+    sent: float
 
 
 class AnalyticsGetResponse(BaseModel):
+    day: list[DayItem]
+    month: list[MonthItem]
+
+
+class ActivityGetParametersQuery(BaseModel):
+    page: PositiveInt | None = 1
+    limit: conint(le=100, gt=0) | None = 50
+
+
+class ActivityGetResponse(BaseModel):
     pass
+
+
+class ActivityGetResponse1(BaseModel):
+    """
+    Error response
+    """
+
+    code: str
+    message: str
+    docs: str | None = None
 
 
 class AnalyticsTimeSeriesGetParametersQuery(BaseModel):
@@ -78,6 +132,87 @@ class AnalyticsReputationGetParametersQuery(BaseModel):
 
 class AnalyticsReputationGetResponse(BaseModel):
     pass
+
+
+class Status(Enum):
+    SCHEDULED = 'SCHEDULED'
+    QUEUED = 'QUEUED'
+    SENT = 'SENT'
+    DELIVERY_DELAYED = 'DELIVERY_DELAYED'
+    BOUNCED = 'BOUNCED'
+    REJECTED = 'REJECTED'
+    RENDERING_FAILURE = 'RENDERING_FAILURE'
+    DELIVERED = 'DELIVERED'
+    OPENED = 'OPENED'
+    CLICKED = 'CLICKED'
+    COMPLAINED = 'COMPLAINED'
+    FAILED = 'FAILED'
+    CANCELLED = 'CANCELLED'
+    SUPPRESSED = 'SUPPRESSED'
+
+
+class EventsGetParametersQuery(BaseModel):
+    page: PositiveInt | None = 1
+    limit: conint(le=100, gt=0) | None = 50
+    status: Status | None = None
+    startDate: AwareDatetime | None = None
+
+
+class EventsGetResponse(BaseModel):
+    pass
+
+
+class EventsGetResponse1(BaseModel):
+    """
+    Error response
+    """
+
+    code: str
+    message: str
+    docs: str | None = None
+
+
+class StatsGetParametersQuery(BaseModel):
+    startDate: AwareDatetime | None = None
+    endDate: AwareDatetime | None = None
+
+
+class StatsGetResponse(BaseModel):
+    pass
+
+
+class StatsGetResponse1(BaseModel):
+    """
+    Error response
+    """
+
+    code: str
+    message: str
+    docs: str | None = None
+
+
+class Period(Enum):
+    day = 'day'
+    week = 'week'
+    month = 'month'
+
+
+class MetricsGetParametersQuery(BaseModel):
+    period: Period | None = 'month'
+
+
+class MetricsGetResponse(BaseModel):
+    pass
+
+
+class MetricsGetResponse1(BaseModel):
+    """
+    Error response
+    """
+
+    code: str
+    message: str
+    docs: str | None = None
 
 
 class Type(Enum):
@@ -230,6 +365,65 @@ class DomainsPostResponse(BaseModel):
     )
 
 
+class DomainsIdAnalyticsGetParametersQuery(BaseModel):
+    period: Period | None = 'month'
+
+
+class DomainsIdAnalyticsGetResponseItem(BaseModel):
+    date: str = Field(..., description='The date of the analytics')
+    sent: float = Field(..., description='Number of emails sent')
+    delivered: float = Field(..., description='Number of emails delivered')
+    opened: float = Field(..., description='Number of emails opened')
+    clicked: float = Field(..., description='Number of emails clicked')
+    bounced: float = Field(..., description='Number of emails bounced')
+    complained: float = Field(..., description='Number of emails complained')
+
+
+class DomainsIdAnalyticsGetResponse(
+    RootModel[list[DomainsIdAnalyticsGetResponseItem]]
+):
+    root: list[DomainsIdAnalyticsGetResponseItem]
+
+
+class DomainsIdAnalyticsGetResponse1(BaseModel):
+    """
+    Error response
+    """
+
+    code: str
+    message: str
+    docs: str | None = None
+
+
+class DomainsIdStatsGetParametersQuery(BaseModel):
+    startDate: str | None = None
+    endDate: str | None = None
+
+
+class DomainsIdStatsGetResponse(BaseModel):
+    totalSent: float = Field(..., description='Total emails sent')
+    totalDelivered: float = Field(..., description='Total emails delivered')
+    totalOpened: float = Field(..., description='Total emails opened')
+    totalClicked: float = Field(..., description='Total emails clicked')
+    totalBounced: float = Field(..., description='Total emails bounced')
+    totalComplained: float = Field(..., description='Total emails complained')
+    deliveryRate: float = Field(..., description='Delivery rate percentage')
+    openRate: float = Field(..., description='Open rate percentage')
+    clickRate: float = Field(..., description='Click rate percentage')
+    bounceRate: float = Field(..., description='Bounce rate percentage')
+    complaintRate: float = Field(..., description='Complaint rate percentage')
+
+
+class DomainsIdStatsGetResponse1(BaseModel):
+    """
+    Error response
+    """
+
+    code: str
+    message: str
+    docs: str | None = None
+
+
 class DomainsIdVerifyPutResponse(BaseModel):
     pass
 
@@ -304,29 +498,30 @@ class DomainsIdDeleteResponse(BaseModel):
     pass
 
 
-class EmailsEmailIdGetResponse(BaseModel):
+class EmailsBouncesGetParametersQuery(BaseModel):
+    page: confloat(ge=1.0) | None = 1
+    limit: confloat(ge=1.0, le=100.0) | None = 20
+
+
+class EmailsBouncesGetResponse(BaseModel):
     pass
 
 
-class EmailsEmailIdPatchRequest(BaseModel):
+class EmailsComplaintsGetParametersQuery(BaseModel):
+    page: confloat(ge=1.0) | None = 1
+    limit: confloat(ge=1.0, le=100.0) | None = 20
+
+
+class EmailsComplaintsGetResponse(BaseModel):
     pass
 
 
-class EmailsEmailIdPatchResponse(BaseModel):
-    pass
+class EmailsUnsubscribesGetParametersQuery(BaseModel):
+    page: confloat(ge=1.0) | None = 1
+    limit: confloat(ge=1.0, le=100.0) | None = 20
 
 
-class EmailsGetParametersQuery(BaseModel):
-    page: str | None = Field('1', examples=['1'])
-    limit: str | None = Field('50', examples=['50'])
-    startDate: AwareDatetime | None = Field(None, examples=['2024-01-01T00:00:00Z'])
-    endDate: AwareDatetime | None = Field(None, examples=['2024-01-31T23:59:59Z'])
-    domainId: str | list[str] | None = Field(
-        None, examples=['lftl0JMqTsuLpW2sG98qI/T2mUG4R+On+5OIBOY3Qa4=']
-    )
-
-
-class EmailsGetResponse(BaseModel):
+class EmailsUnsubscribesGetResponse(BaseModel):
     pass
 
 
@@ -357,30 +552,17 @@ class EmailsPostResponse(BaseModel):
     pass
 
 
-class EmailsBouncesGetParametersQuery(BaseModel):
-    page: confloat(ge=1.0) | None = 1
-    limit: confloat(ge=1.0, le=100.0) | None = 20
+class EmailsGetParametersQuery(BaseModel):
+    page: str | None = Field('1', examples=['1'])
+    limit: str | None = Field('50', examples=['50'])
+    startDate: AwareDatetime | None = Field(None, examples=['2024-01-01T00:00:00Z'])
+    endDate: AwareDatetime | None = Field(None, examples=['2024-01-31T23:59:59Z'])
+    domainId: str | list[str] | None = Field(
+        None, examples=['lftl0JMqTsuLpW2sG98qI/T2mUG4R+On+5OIBOY3Qa4=']
+    )
 
 
-class EmailsBouncesGetResponse(BaseModel):
-    pass
-
-
-class EmailsComplaintsGetParametersQuery(BaseModel):
-    page: confloat(ge=1.0) | None = 1
-    limit: confloat(ge=1.0, le=100.0) | None = 20
-
-
-class EmailsComplaintsGetResponse(BaseModel):
-    pass
-
-
-class EmailsUnsubscribesGetParametersQuery(BaseModel):
-    page: confloat(ge=1.0) | None = 1
-    limit: confloat(ge=1.0, le=100.0) | None = 20
-
-
-class EmailsUnsubscribesGetResponse(BaseModel):
+class EmailsGetResponse(BaseModel):
     pass
 
 
@@ -408,10 +590,43 @@ class EmailsBatchPostRequestItem(BaseModel):
 
 
 class EmailsBatchPostRequest(RootModel[list[EmailsBatchPostRequestItem]]):
-    root: list[EmailsBatchPostRequestItem] = Field(..., max_length=100)
+    root: list[EmailsBatchPostRequestItem] = Field(..., max_length=100, min_length=1)
 
 
 class EmailsBatchPostResponse(BaseModel):
+    pass
+
+
+class EmailsEmailIdEventsGetParametersQuery(BaseModel):
+    page: PositiveInt | None = 1
+    limit: conint(le=100, gt=0) | None = 50
+    status: Status | None = None
+    startDate: AwareDatetime | None = None
+
+
+class EmailsEmailIdEventsGetResponse(BaseModel):
+    pass
+
+
+class EmailsEmailIdEventsGetResponse1(BaseModel):
+    """
+    Error response
+    """
+
+    code: str
+    message: str
+    docs: str | None = None
+
+
+class EmailsEmailIdGetResponse(BaseModel):
+    pass
+
+
+class EmailsEmailIdPatchRequest(BaseModel):
+    pass
+
+
+class EmailsEmailIdPatchResponse(BaseModel):
     pass
 
 
@@ -420,7 +635,7 @@ class EmailsEmailIdCancelPostResponse(BaseModel):
 
 
 class ContactBooksContactBookIdContactsPostRequest(BaseModel):
-    email: str
+    email: EmailStr
     firstName: str | None = None
     lastName: str | None = None
     properties: dict[str, str] | None = None
@@ -438,8 +653,8 @@ class ContactBooksContactBookIdContactsGetParametersQuery(BaseModel):
     ids: str | None = None
 
 
-class ContactBooksContactBookIdContactsGetResponse(RootModel[list[dict[str, Any]]]):
-    root: list[dict[str, Any]]
+class ContactBooksContactBookIdContactsGetResponse(BaseModel):
+    pass
 
 
 class ContactBooksContactBookIdContactsContactIdPatchRequest(BaseModel):
@@ -645,35 +860,35 @@ class TemplatesPostResponse(BaseModel):
     id: str
 
 
-class TemplatesGetResponseItem(BaseModel):
+class Datum(BaseModel):
     id: str
     name: str
     subject: str
-    html: str | None = None
-    content: str | None = None
+    html: str
+    content: str
     teamId: str
     createdAt: str
     updatedAt: str
 
 
-class TemplatesGetResponse(RootModel[list[TemplatesGetResponseItem]]):
-    root: list[TemplatesGetResponseItem]
+class TemplatesGetResponse(BaseModel):
+    data: list[Datum]
 
 
 class TemplatesIdGetResponse(BaseModel):
     id: str
     name: str
     subject: str
-    html: str | None = None
-    content: str | None = None
+    html: str
+    content: str
     teamId: str
     createdAt: str
     updatedAt: str
 
 
 class TemplatesIdPatchRequest(BaseModel):
-    name: str | None = None
-    subject: str | None = None
+    name: constr(min_length=1) | None = None
+    subject: constr(min_length=1) | None = None
     html: str | None = None
     content: str | None = None
 
@@ -711,8 +926,269 @@ class SuppressionsPostRequest(BaseModel):
 
 
 class SuppressionsPostResponse(BaseModel):
-    pass
+    id: str
+    email: str
+    reason: str
+    source: str | None = None
+    createdAt: str
 
 
 class SuppressionsEmailEmailDeleteResponse(BaseModel):
     pass
+
+
+class EventType(Enum):
+    contact_created = 'contact.created'
+    contact_updated = 'contact.updated'
+    contact_deleted = 'contact.deleted'
+    domain_created = 'domain.created'
+    domain_verified = 'domain.verified'
+    domain_updated = 'domain.updated'
+    domain_deleted = 'domain.deleted'
+    email_queued = 'email.queued'
+    email_sent = 'email.sent'
+    email_delivery_delayed = 'email.delivery_delayed'
+    email_delivered = 'email.delivered'
+    email_bounced = 'email.bounced'
+    email_rejected = 'email.rejected'
+    email_rendering_failure = 'email.rendering_failure'
+    email_complained = 'email.complained'
+    email_failed = 'email.failed'
+    email_cancelled = 'email.cancelled'
+    email_suppressed = 'email.suppressed'
+    email_opened = 'email.opened'
+    email_clicked = 'email.clicked'
+
+
+class WebhooksPostRequest(BaseModel):
+    url: AnyUrl
+    description: str | None = None
+    eventTypes: list[EventType]
+    secret: constr(min_length=16) | None = None
+
+
+class WebhooksPostResponse(BaseModel):
+    """
+    Webhook details
+    """
+
+    id: str
+    url: str
+    description: str
+    eventTypes: list[EventType]
+    status: str
+    secret: str
+    apiVersion: str
+    consecutiveFailures: float
+    lastSuccessAt: str
+    lastFailureAt: str
+    createdAt: str
+    updatedAt: str
+    teamId: str
+    createdByUserId: str
+
+
+class WebhooksPostResponse1(BaseModel):
+    """
+    Error response
+    """
+
+    code: str
+    message: str
+    docs: str | None = None
+
+
+class WebhooksGetResponseItem(BaseModel):
+    """
+    Webhook details
+    """
+
+    id: str
+    url: str
+    description: str
+    eventTypes: list[EventType]
+    status: str
+    secret: str
+    apiVersion: str
+    consecutiveFailures: float
+    lastSuccessAt: str
+    lastFailureAt: str
+    createdAt: str
+    updatedAt: str
+    teamId: str
+    createdByUserId: str
+
+
+class WebhooksGetResponse(RootModel[list[WebhooksGetResponseItem]]):
+    root: list[WebhooksGetResponseItem]
+
+
+class WebhooksGetResponse1(BaseModel):
+    """
+    Error response
+    """
+
+    code: str
+    message: str
+    docs: str | None = None
+
+
+class WebhooksIdGetResponse(BaseModel):
+    """
+    Webhook details
+    """
+
+    id: str
+    url: str
+    description: str
+    eventTypes: list[EventType]
+    status: str
+    secret: str
+    apiVersion: str
+    consecutiveFailures: float
+    lastSuccessAt: str
+    lastFailureAt: str
+    createdAt: str
+    updatedAt: str
+    teamId: str
+    createdByUserId: str
+
+
+class WebhooksIdGetResponse1(BaseModel):
+    """
+    Error response
+    """
+
+    code: str
+    message: str
+    docs: str | None = None
+
+
+class WebhooksIdPatchRequest(BaseModel):
+    url: AnyUrl | None = None
+    description: str | None = None
+    eventTypes: list[EventType] | None = None
+    active: bool | None = None
+    rotateSecret: bool | None = None
+    secret: constr(min_length=16) | None = None
+
+
+class WebhooksIdPatchResponse(BaseModel):
+    """
+    Webhook details
+    """
+
+    id: str
+    url: str
+    description: str
+    eventTypes: list[EventType]
+    status: str
+    secret: str
+    apiVersion: str
+    consecutiveFailures: float
+    lastSuccessAt: str
+    lastFailureAt: str
+    createdAt: str
+    updatedAt: str
+    teamId: str
+    createdByUserId: str
+
+
+class WebhooksIdPatchResponse1(BaseModel):
+    """
+    Error response
+    """
+
+    code: str
+    message: str
+    docs: str | None = None
+
+
+class WebhooksIdDeleteResponse(BaseModel):
+    """
+    Webhook details
+    """
+
+    id: str
+    url: str
+    description: str
+    eventTypes: list[EventType]
+    status: str
+    secret: str
+    apiVersion: str
+    consecutiveFailures: float
+    lastSuccessAt: str
+    lastFailureAt: str
+    createdAt: str
+    updatedAt: str
+    teamId: str
+    createdByUserId: str
+
+
+class WebhooksIdDeleteResponse1(BaseModel):
+    """
+    Error response
+    """
+
+    code: str
+    message: str
+    docs: str | None = None
+
+
+class WebhooksIdTestPostResponse(BaseModel):
+    """
+    Webhook call details
+    """
+
+    id: str
+    type: str
+    createdAt: str
+    updatedAt: str
+    teamId: str
+    status: str
+    webhookId: str
+    payload: str
+    attempt: float
+    nextAttemptAt: str
+    lastError: str
+    responseStatus: float
+    responseTimeMs: float
+    responseText: str
+
+
+class WebhooksIdTestPostResponse1(BaseModel):
+    """
+    Error response
+    """
+
+    code: str
+    message: str
+    docs: str | None = None
+
+
+class TeamGetResponse(BaseModel):
+    pass
+
+
+class TeamGetResponse1(BaseModel):
+    """
+    Error response
+    """
+
+    code: str
+    message: str
+    docs: str | None = None
+
+
+class TeamsGetResponse(BaseModel):
+    pass
+
+
+class TeamsGetResponse1(BaseModel):
+    """
+    Error response
+    """
+
+    code: str
+    message: str
+    docs: str | None = None

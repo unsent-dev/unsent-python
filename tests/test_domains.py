@@ -27,3 +27,21 @@ def test_verify_domain(client):
         
         assert error is None
         assert response["message"] == "Verification started"
+
+def test_get_analytics(client):
+    with requests_mock.Mocker() as m:
+        m.get("https://api.unsent.dev/v1/domains/1/analytics?period=day", json={"data": "analytics"}, status_code=200)
+        
+        response, error = client.domains.get_analytics(1, period="day")
+        
+        assert error is None
+        assert response == {"data": "analytics"}
+
+def test_get_stats(client):
+    with requests_mock.Mocker() as m:
+        m.get("https://api.unsent.dev/v1/domains/1/stats?startDate=2023-01-01", json={"data": "stats"}, status_code=200)
+        
+        response, error = client.domains.get_stats(1, start_date="2023-01-01")
+        
+        assert error is None
+        assert response == {"data": "stats"}

@@ -201,5 +201,41 @@ class Emails:
         data, err = self.unsent.get(path)
         return (data, err)  # type: ignore[return-value]
 
+    def get_events(
+        self,
+        email_id: str,
+        *,
+        page: Optional[int] = None,
+        limit: Optional[int] = None,
+        status: Optional[str] = None,
+        start_date: Optional[Union[str, datetime]] = None,
+    ) -> Tuple[Optional[Dict[str, Any]], Optional[APIError]]:
+        """Get events for a specific email.
+        
+        Args:
+            email_id: The ID of the email
+            page: Page number
+            limit: Page size
+            status: Event status
+            start_date: Filter events after this date
+        """
+        query_params = []
+        if page is not None:
+            query_params.append(f"page={page}")
+        if limit is not None:
+            query_params.append(f"limit={limit}")
+        if status is not None:
+            query_params.append(f"status={status}")
+        if start_date is not None:
+            val = start_date
+            if isinstance(val, datetime):
+                val = val.isoformat()
+            query_params.append(f"startDate={val}")
+
+        query_string = "&".join(query_params)
+        path = f"/emails/{email_id}/events?{query_string}" if query_string else f"/emails/{email_id}/events"
+        data, err = self.unsent.get(path)
+        return (data, err)  # type: ignore[return-value]
+
 
 from .unsent import unsent  # noqa: E402  pylint: disable=wrong-import-position

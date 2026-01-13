@@ -33,3 +33,13 @@ def test_delete_webhook(client):
         
         assert error is None
         assert response["success"] is True
+
+def test_test_webhook(client):
+    with requests_mock.Mocker() as m:
+        m.post("https://api.unsent.dev/v1/webhooks/wh1/test", json={"id": "call1", "status": 200}, status_code=200)
+        
+        response, error = client.webhooks.test("wh1")
+        
+        assert error is None
+        assert response["id"] == "call1"
+        assert response["status"] == 200

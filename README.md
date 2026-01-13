@@ -416,9 +416,65 @@ Remove a domain.
 data, error = client.domains.delete("domain_id")
 ```
 
-### Webhooks
+### Activity
 
-> **Note:** Webhooks functionality is currently under development in the API. The SDK includes placeholder methods to ensure compatibility when the feature becomes available.
+#### List Activity
+
+Retrieve a list of activity logs.
+
+```python
+data, error = client.activity.list(page=1, limit=20)
+```
+
+### Events
+
+#### List Events
+
+Retrieve a list of email events.
+
+```python
+data, error = client.events.list(
+    page=1,
+    limit=20,
+    status="delivered",
+    start_date="2024-01-01T00:00:00Z"
+)
+```
+
+### Metrics
+
+#### Get Metrics
+
+Retrieve email metrics for a specific period.
+
+```python
+data, error = client.metrics.get(period="month")
+```
+
+### Stats
+
+#### Get Stats
+
+Retrieve email statistics for a specific date range.
+
+```python
+data, error = client.stats.get(
+    start_date="2024-01-01T00:00:00Z",
+    end_date="2024-01-31T23:59:59Z"
+)
+```
+
+### Teams
+
+#### List Teams
+
+Retrieve a list of teams associated with the current user.
+
+```python
+data, error = client.teams.list()
+```
+
+### Webhooks
 
 #### List Webhooks
 
@@ -435,7 +491,7 @@ Subscribe to email events.
 ```python
 data, error = client.webhooks.create({
     "url": "https://api.myapp.com/webhooks/resend",
-    "events": ["email.sent", "email.delivered", "email.bounced"]
+    "eventTypes": ["email.sent", "email.delivered", "email.bounced"]
 })
 ```
 

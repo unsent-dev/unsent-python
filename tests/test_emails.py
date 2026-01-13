@@ -83,3 +83,11 @@ def test_get_unsubscribes(client):
         assert error is None
         assert response["count"] == 1
 
+def test_get_events(client):
+    with requests_mock.Mocker() as m:
+        m.get("https://api.unsent.dev/v1/emails/email_123/events?page=1", json={"data": []}, status_code=200)
+        
+        response, error = client.emails.get_events("email_123", page=1)
+        
+        assert error is None
+        assert response == {"data": []}
