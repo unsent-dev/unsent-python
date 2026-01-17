@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "unsent"
-version = "1.0.3"
+version = "1.0.4"
 description = "Python SDK for the Unsent API - Send transactional emails with ease"
 authors = ["sourav"]
 license = "MIT"
