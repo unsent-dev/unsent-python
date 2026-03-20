@@ -2,11 +2,11 @@
 name = "unsent"
 version = "1.0.4"
 description = "Python SDK for the Unsent API - Send transactional emails with ease"
-authors = ["sourav"]
+authors = ["Unsent"]
 license = "MIT"
 readme = "README.md"
 homepage = "https://unsent.dev"
-repository = "https://github.com/souravsspace/unsent-python"
+repository = "https://github.com/unsent-dev/unsent-python"
 documentation = "https://docs.unsent.dev"
 keywords = ["unsent", "email", "transactional-email", "api", "sdk"]
 packages = [{ include = "unsent" }]
