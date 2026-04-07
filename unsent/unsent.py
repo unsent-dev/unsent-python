@@ -93,6 +93,7 @@ class unsent:
         self.activity = Activity(self)
         self.teams = Teams(self)
         self.system = System(self)
+        self.provider_connections = ProviderConnections(self)
 
     # ------------------------------------------------------------------
     # Internal request helper
@@ -193,3 +194,4 @@ from .stats import Stats  # noqa: E402
 from .activity import Activity  # noqa: E402
 from .teams import Teams  # noqa: E402
 from .system import System  # noqa: E402
+from .provider_connections import ProviderConnections  # noqa: E402
