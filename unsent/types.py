@@ -21,6 +21,10 @@ from pydantic import (
 )
 
 
+class SuccessResponse(BaseModel):
+    success: bool
+
+
 class HealthGetResponse(BaseModel):
     status: str
     uptime: float
@@ -69,6 +73,7 @@ class ApiKeysPostRequest(BaseModel):
 
 
 class ApiKeysPostResponse(BaseModel):
+    id: str
     token: str
 
 
@@ -655,14 +660,6 @@ class DomainsIdRoutesRouteIdPatchRequest(BaseModel):
     openTracking: bool | None = None
 
 
-class DomainsIdRoutesRouteIdPatchResponse(BaseModel):
-    success: bool
-
-
-class DomainsIdRoutesRouteIdDeleteResponse(BaseModel):
-    success: bool
-
-
 class EmailsBouncesGetParametersQuery(BaseModel):
     page: confloat(ge=1.0) | None = 1
     limit: confloat(ge=1.0, le=100.0) | None = 20
@@ -942,6 +939,10 @@ class CampaignsCampaignIdGetResponse(BaseModel):
     updatedAt: AwareDatetime
 
 
+class CampaignsCampaignIdDeleteResponse(BaseModel):
+    pass
+
+
 class CampaignsCampaignIdSchedulePostRequest(BaseModel):
     scheduledAt: str | None = Field(
         None,
@@ -1010,10 +1011,6 @@ class ContactBooksIdPatchResponse(BaseModel):
     name: str
 
 
-class ContactBooksIdDeleteResponse(BaseModel):
-    success: bool
-
-
 class TemplatesPostRequest(BaseModel):
     name: constr(min_length=1)
     subject: constr(min_length=1)
@@ -1056,14 +1053,6 @@ class TemplatesIdPatchRequest(BaseModel):
     subject: constr(min_length=1) | None = None
     html: str | None = None
     content: str | None = None
-
-
-class TemplatesIdPatchResponse(BaseModel):
-    success: bool
-
-
-class TemplatesIdDeleteResponse(BaseModel):
-    success: bool
 
 
 class Reason(Enum):
@@ -1270,24 +1259,7 @@ class WebhooksIdPatchResponse1(BaseModel):
 
 
 class WebhooksIdDeleteResponse(BaseModel):
-    """
-    Webhook details
-    """
-
-    id: str
-    url: str
-    description: str
-    eventTypes: list[EventType]
-    status: str
-    secret: str
-    apiVersion: str
-    consecutiveFailures: float
-    lastSuccessAt: str
-    lastFailureAt: str
-    createdAt: str
-    updatedAt: str
-    teamId: str
-    createdByUserId: str
+    success: bool
 
 
 class WebhooksIdDeleteResponse1(BaseModel):

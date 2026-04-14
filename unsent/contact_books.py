@@ -12,7 +12,7 @@ from .types import (
     ContactBooksIdGetResponse,
     ContactBooksIdPatchRequest,
     ContactBooksIdPatchResponse,
-    ContactBooksIdDeleteResponse,
+    SuccessResponse,
 )
 
 
@@ -50,7 +50,7 @@ class ContactBooks:
 
     def delete(
         self, book_id: str
-    ) -> Tuple[Optional[ContactBooksIdDeleteResponse], Optional[APIError]]:
+    ) -> Tuple[Optional[SuccessResponse], Optional[APIError]]:
         data, err = self.unsent.delete(f"/contactBooks/{book_id}")
         return (data, err)  # type: ignore[return-value]
 

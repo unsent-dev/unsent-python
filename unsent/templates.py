@@ -9,10 +9,9 @@ from .types import (
     TemplatesGetResponse,
     TemplatesPostRequest,
     TemplatesPostResponse,
-    TemplatesIdDeleteResponse,
     TemplatesIdGetResponse,
     TemplatesIdPatchRequest,
-    TemplatesIdPatchResponse,
+    SuccessResponse,
 )
 
 
@@ -41,7 +40,7 @@ class Templates:
 
     def update(
         self, template_id: str, payload: Union[TemplatesIdPatchRequest, Dict[str, Any]]
-    ) -> Tuple[Optional[TemplatesIdPatchResponse], Optional[APIError]]:
+    ) -> Tuple[Optional[SuccessResponse], Optional[APIError]]:
         body = payload
         if hasattr(payload, "model_dump"):
             body = payload.model_dump(by_alias=True, exclude_none=True) # type: ignore
@@ -50,7 +49,7 @@ class Templates:
 
     def delete(
         self, template_id: str
-    ) -> Tuple[Optional[TemplatesIdDeleteResponse], Optional[APIError]]:
+    ) -> Tuple[Optional[SuccessResponse], Optional[APIError]]:
         data, err = self.unsent.delete(f"/templates/{template_id}")
         return (data, err)  # type: ignore[return-value]
 

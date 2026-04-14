@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
-from .legacy_types import APIError, Email
+from .legacy_types import APIError
 from .types import (
     EmailsPostRequest,
     EmailsPostResponse,
@@ -14,6 +14,7 @@ from .types import (
     EmailsEmailIdCancelPostResponse,
     EmailsEmailIdPatchRequest,
     EmailsEmailIdPatchResponse,
+    EmailsEmailIdGetResponse,
 )
 
 
@@ -73,7 +74,7 @@ class Emails:
         data, err = self.unsent.post("/emails/batch", items)
         return (data, err)  # type: ignore[return-value]
 
-    def get(self, email_id: str) -> Tuple[Optional[Email], Optional[APIError]]:
+    def get(self, email_id: str) -> Tuple[Optional[EmailsEmailIdGetResponse], Optional[APIError]]:
         data, err = self.unsent.get(f"/emails/{email_id}")
         return (data, err)  # type: ignore[return-value]
 
