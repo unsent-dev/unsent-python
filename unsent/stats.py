@@ -1,3 +1,4 @@
+# @manual
 """Stats resource client."""
 from __future__ import annotations
 

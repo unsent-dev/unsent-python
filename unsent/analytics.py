@@ -1,3 +1,4 @@
+# @manual
 """Analytics resource client."""
 from __future__ import annotations
 

@@ -1,3 +1,4 @@
+# @manual
 """Webhook resource client.
 
 Note: Webhooks functionality is currently under development in the API.

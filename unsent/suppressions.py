@@ -1,3 +1,4 @@
+# @manual
 """Suppression resource client."""
 from __future__ import annotations
 

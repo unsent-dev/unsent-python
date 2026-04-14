@@ -1,3 +1,4 @@
+# @manual
 """Email resource client using TypedDict shapes (no Pydantic)."""
 from __future__ import annotations
 

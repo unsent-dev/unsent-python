@@ -1,3 +1,4 @@
+# @manual
 """Domain resource client using TypedDict shapes (no Pydantic)."""
 
 from __future__ import annotations
@@ -105,6 +106,54 @@ class Domains:
         query_string = "&".join(query_params)
         path = f"/domains/{domain_id}/stats?{query_string}" if query_string else f"/domains/{domain_id}/stats"
         data, err = self.unsent.get(path)
+        return (data, err)  # type: ignore[return-value]
+
+    def list_routes(
+        self, domain_id: str
+    ) -> Tuple[Optional[List[Dict[str, Any]]], Optional[APIError]]:
+        """List routes for a domain.
+
+        Args:
+            domain_id: The domain ID
+        """
+        data, err = self.unsent.get(f"/domains/{domain_id}/routes")
+        return (data, err)  # type: ignore[return-value]
+
+    def add_route(
+        self, domain_id: str, payload: Dict[str, Any]
+    ) -> Tuple[Optional[Dict[str, Any]], Optional[APIError]]:
+        """Add a route to a domain.
+
+        Args:
+            domain_id: The domain ID
+            payload: Route data (providerConnectionId, optional weight)
+        """
+        data, err = self.unsent.post(f"/domains/{domain_id}/routes", payload)
+        return (data, err)  # type: ignore[return-value]
+
+    def update_route(
+        self, domain_id: str, route_id: str, payload: Dict[str, Any]
+    ) -> Tuple[Optional[Dict[str, Any]], Optional[APIError]]:
+        """Update a domain route.
+
+        Args:
+            domain_id: The domain ID
+            route_id: The route ID
+            payload: Fields to update (weight, clickTracking, openTracking)
+        """
+        data, err = self.unsent.patch(f"/domains/{domain_id}/routes/{route_id}", payload)
+        return (data, err)  # type: ignore[return-value]
+
+    def delete_route(
+        self, domain_id: str, route_id: str
+    ) -> Tuple[Optional[Dict[str, Any]], Optional[APIError]]:
+        """Delete a domain route.
+
+        Args:
+            domain_id: The domain ID
+            route_id: The route ID
+        """
+        data, err = self.unsent.delete(f"/domains/{domain_id}/routes/{route_id}")
         return (data, err)  # type: ignore[return-value]
 
 

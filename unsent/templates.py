@@ -1,3 +1,4 @@
+# @manual
 """Template resource client."""
 from __future__ import annotations
 

@@ -1,3 +1,4 @@
+# @manual
 """Api Keys resource client."""
 from __future__ import annotations
 

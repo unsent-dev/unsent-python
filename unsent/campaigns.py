@@ -1,3 +1,4 @@
+# @manual
 """Campaign resource client using TypedDict shapes (no Pydantic)."""
 
 from __future__ import annotations
@@ -73,6 +74,12 @@ class Campaigns:
             f"/campaigns/{campaign_id}/resume",
             {},
         )
+        return (data, err)  # type: ignore[return-value]
+
+    def delete(
+        self, campaign_id: str
+    ) -> Tuple[Optional[Dict[str, Any]], Optional[APIError]]:
+        data, err = self.unsent.delete(f"/campaigns/{campaign_id}")
         return (data, err)  # type: ignore[return-value]
 
 
